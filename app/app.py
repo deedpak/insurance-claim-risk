@@ -57,6 +57,16 @@ section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button {
     background-color: #EFF2FA !important;
     border: 1px solid #D6DCEF !important;
 }
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button,
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button p,
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button span {
+    color: #1B2A4A !important;
+    font-weight: 700 !important;
+    opacity: 1 !important;
+}
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button svg {
+    fill: #1B2A4A !important;
+}
 
 /* Fix uploaded-file row contrast (white card was swallowing the light text) */
 section[data-testid="stSidebar"] [data-testid="stFileUploaderFile"],
