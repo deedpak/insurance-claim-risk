@@ -47,6 +47,17 @@ section[data-testid="stSidebar"] [data-testid="stFileUploaderFileData"] * {
 }
 section[data-testid="stSidebar"] small { color: #6B7280 !important; }
 
+/* The whole drop zone (including "Drag and drop" text, size limit caption,
+   and the "Browse files" button) also sits on a light card - keep it dark text */
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"],
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] * {
+    color: #1B2A4A !important;
+}
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button {
+    background-color: #EFF2FA !important;
+    border: 1px solid #D6DCEF !important;
+}
+
 /* Fix uploaded-file row contrast (white card was swallowing the light text) */
 section[data-testid="stSidebar"] [data-testid="stFileUploaderFile"],
 section[data-testid="stSidebar"] [data-testid="stFileUploaderFileName"],
