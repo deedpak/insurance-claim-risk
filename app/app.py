@@ -37,6 +37,35 @@ section[data-testid="stSidebar"] {
 section[data-testid="stSidebar"] * { color: #E6E9F5 !important; }
 section[data-testid="stSidebar"] .stFileUploader label { color: #E6E9F5 !important; }
 
+/* The uploaded-file card itself has a white background, so its text must stay dark */
+section[data-testid="stSidebar"] [data-testid="stFileUploaderFile"],
+section[data-testid="stSidebar"] [data-testid="stFileUploaderFile"] * {
+    color: #1B2A4A !important;
+}
+section[data-testid="stSidebar"] [data-testid="stFileUploaderFileData"] * {
+    color: #1B2A4A !important;
+}
+section[data-testid="stSidebar"] small { color: #6B7280 !important; }
+
+/* Fix uploaded-file row contrast (white card was swallowing the light text) */
+section[data-testid="stSidebar"] [data-testid="stFileUploaderFile"],
+section[data-testid="stSidebar"] [data-testid="stFileUploaderFileName"],
+section[data-testid="stSidebar"] div[data-testid="stFileUploaderFile"] > div {
+    background-color: #1B2A4A !important;
+    border-radius: 8px;
+}
+section[data-testid="stSidebar"] [data-testid="stFileUploaderFile"] * {
+    color: #E6E9F5 !important;
+}
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] {
+    background-color: #16233F !important;
+    border: 1px dashed #3A4A70 !important;
+}
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] * {
+    color: #E6E9F5 !important;
+}
+section[data-testid="stSidebar"] small { color: #9AA6C4 !important; }
+
 /* Hero banner */
 .hero {
     background: linear-gradient(135deg, #101C36 0%, #1B2A4A 60%, #24365F 100%);
