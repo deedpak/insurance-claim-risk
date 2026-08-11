@@ -1,5 +1,7 @@
 # Insurance Claim Risk Detection
 
+**🚀 [Live App](https://insurance-claim-risk-ap7ujahjub93vknofkwmsh.streamlit.app/)** — try it directly in your browser, no setup needed.
+
 A prototype that analyses insurance claims, predicts fraud risk, explains why each claim was flagged, and generates a plain-English investigator summary using AI — built as a 48-hour technical assessment.
 
 ## What this does
