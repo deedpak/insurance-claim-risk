@@ -117,7 +117,13 @@ def prepare_for_model(df_raw):
 # so the app still works end-to-end even without the AI step set up.
 # ---------------------------------------------------------------------------
 def generate_ai_explanation(claim_summary: dict, top_factors: list) -> str:
+    # Works both locally (environment variable) and on Streamlit Community Cloud (st.secrets)
     api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        try:
+            api_key = st.secrets.get("GEMINI_API_KEY", "")
+        except Exception:
+            api_key = ""
 
     factors_text = "; ".join([f"{f['feature']} (impact: {f['impact']:+.3f})" for f in top_factors])
 
@@ -144,14 +150,21 @@ def generate_ai_explanation(claim_summary: dict, top_factors: list) -> str:
         )
 
     try:
-        resp = requests.post(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
-            headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
-            json={"contents": [{"parts": [{"text": prompt}]}]},
-            timeout=15,
-        )
-        resp.raise_for_status()
-        return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+        last_error = None
+        for model_name in ["gemini-2.5-flash", "gemini-flash-latest", "gemini-2.0-flash"]:
+            try:
+                resp = requests.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent",
+                    headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
+                    json={"contents": [{"parts": [{"text": prompt}]}]},
+                    timeout=15,
+                )
+                if resp.status_code == 200:
+                    return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+                last_error = f"{resp.status_code} for model '{model_name}': {resp.text[:200]}"
+            except Exception as inner_e:
+                last_error = str(inner_e)
+        raise RuntimeError(last_error)
     except Exception as e:
         factor_names = ", ".join([f['feature'] for f in top_factors[:3]])
         return (
