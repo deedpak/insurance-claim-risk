@@ -17,12 +17,128 @@ import matplotlib.pyplot as plt
 import requests
 
 # ---------------------------------------------------------------------------
-# Page setup
+# Page setup + visual theme
 # ---------------------------------------------------------------------------
-st.set_page_config(page_title="Insurance Claim Risk Detection", layout="wide")
-st.title("🔍 Insurance Claim Risk Detection")
-st.caption("Upload a claims CSV to score fraud risk, see why each claim was flagged, "
-           "and get an investigator-friendly AI explanation.")
+st.set_page_config(page_title="Insurance Claim Risk Detection", layout="wide", page_icon="🔍")
+
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap');
+
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
+/* App background */
+.stApp { background-color: #F7F8FC; }
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #101C36;
+}
+section[data-testid="stSidebar"] * { color: #E6E9F5 !important; }
+section[data-testid="stSidebar"] .stFileUploader label { color: #E6E9F5 !important; }
+
+/* Hero banner */
+.hero {
+    background: linear-gradient(135deg, #101C36 0%, #1B2A4A 60%, #24365F 100%);
+    padding: 2.2rem 2.4rem;
+    border-radius: 14px;
+    margin-bottom: 1.6rem;
+}
+.hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 2.3rem;
+    color: #FFFFFF;
+    margin: 0 0 0.4rem 0;
+}
+.hero p {
+    color: #AEB8D6;
+    font-size: 1.02rem;
+    margin: 0;
+    max-width: 760px;
+}
+.hero .eyebrow {
+    color: #6C8CFF;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+/* Section headers */
+h2 {
+    font-family: 'Fraunces', serif !important;
+    font-weight: 600 !important;
+    color: #1B2A4A !important;
+    font-size: 1.5rem !important;
+    margin-top: 1.8rem !important;
+}
+h3 { color: #1B2A4A !important; font-weight: 600 !important; }
+
+/* Metric cards */
+div[data-testid="stMetric"] {
+    background-color: #FFFFFF;
+    border: 1px solid #E7EAF3;
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 1px 3px rgba(27,42,74,0.06);
+}
+div[data-testid="stMetricLabel"] { color: #6B7280 !important; }
+div[data-testid="stMetricValue"] { color: #1B2A4A !important; font-weight: 700 !important; }
+
+/* Dataframe */
+div[data-testid="stDataFrame"] {
+    border: 1px solid #E7EAF3;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Buttons */
+.stDownloadButton button, .stButton button {
+    background-color: #2E5BFF !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 1.2rem !important;
+}
+.stDownloadButton button:hover, .stButton button:hover { background-color: #1E4BE0 !important; }
+
+/* Info / success / warning boxes */
+div[data-testid="stAlertContainer"] { border-radius: 10px; }
+
+/* Risk badge pills */
+.risk-badge {
+    display: inline-block;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+}
+.risk-high { background-color: #FDECEC; color: #C13B44; }
+.risk-medium { background-color: #FFF3DC; color: #B7791F; }
+.risk-low { background-color: #E7F6EE; color: #1E8A57; }
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="hero">
+    <div class="eyebrow">Fraud Risk Prototype</div>
+    <h1>🔍 Insurance Claim Risk Detection</h1>
+    <p>Upload a claims CSV to score fraud risk, see exactly why each claim was flagged,
+    and get an investigator-friendly AI explanation — powered by SHAP and Gemini.</p>
+</div>
+""", unsafe_allow_html=True)
+
+RISK_BADGE_CLASS = {"High": "risk-high", "Medium": "risk-medium", "Low": "risk-low"}
+
+
+def risk_badge_html(category):
+    cls = RISK_BADGE_CLASS.get(category, "risk-medium")
+    return f'<span class="risk-badge {cls}">{category} risk</span>'
+
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "..", "models")
 
@@ -260,10 +376,18 @@ filtered = df_feat[df_feat['risk_category'].isin(risk_filter)].sort_values(
 
 display_cols = [c for c in ['risk_probability', 'risk_category', 'total_claim_amount',
                              'incident_severity', 'incident_type'] if c in filtered.columns]
-st.dataframe(
-    filtered[display_cols].style.format({'risk_probability': '{:.1%}'}),
-    use_container_width=True
-)
+
+
+def _style_risk(val):
+    colors = {"High": "#C13B44", "Medium": "#B7791F", "Low": "#1E8A57"}
+    return f"color: {colors.get(val, '#1B2A4A')}; font-weight: 700;"
+
+
+styled_table = filtered[display_cols].style.format({'risk_probability': '{:.1%}'})
+if 'risk_category' in display_cols:
+    styled_table = styled_table.map(_style_risk, subset=['risk_category'])
+
+st.dataframe(styled_table, use_container_width=True)
 
 # ---------------------------------------------------------------------------
 # Individual claim explanation
@@ -286,7 +410,10 @@ else:
     c1, c2 = st.columns([1, 2])
     with c1:
         st.metric("Fraud Risk Probability", f"{row['risk_probability']:.1%}")
-        st.metric("Risk Category", row['risk_category'])
+        st.markdown(
+            f'<div style="margin: -0.3rem 0 1.1rem 0;">{risk_badge_html(row["risk_category"])}</div>',
+            unsafe_allow_html=True
+        )
         if 'total_claim_amount' in row:
             st.metric("Claim Amount", f"${row['total_claim_amount']:,.0f}")
 
